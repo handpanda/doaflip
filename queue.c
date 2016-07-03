@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
  
 #include "queue.h"
-#include "error.h"
 #include "ringbuffer.h"
 
 static voidfxn osQueueBuffer[QUEUE_SIZE];

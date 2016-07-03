@@ -14,7 +14,6 @@
 
 #include "config.h"
 
-#include "error.h"
 #include "ringbuffer.h"
 #include "queue.h"
 #include "rti.h"
@@ -129,18 +128,19 @@ void update_gate_status() {
     gate_status = IR1A_INPUT_PORT;
 }
 
-//void test_leds()
-//{
-//    static uint8 enable = 0;
-//    enable = (enable + 1) % 8;
-//    
-//    set_color(enable & 0b1, (enable & 0b10) >> 1, (enable & 0b100) >> 2);
-//}
+void test_leds()
+{
+    static uint8 enable = 0;
+    enable = (enable + 1) % 8;
+    
+    set_color(enable & 0b1, (enable & 0b10) >> 1, (enable & 0b100) >> 2);
+}
 
 void ir_ISR (void) {
-    GREEN1_LAT = 1;
     if (INTCONbits.INT0IF) {
-        INTCONbits.INT0IF = 0;           
+        INTCONbits.INT0IF = 0;   
+
+        test_leds();
     }
 }
 

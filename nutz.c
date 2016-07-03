@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
 #include "nutz.h"
-#include "error.h"
 #include "rti.h"
 #include "config.h"
 
@@ -75,20 +74,13 @@ void low_isr_entry(void)
 #pragma interrupt high_isr
 void high_isr(void)
 {
-    uint8 ffff;
-    RED1_LAT = 1;
-    if (INTCONbits.INT0IF) {
-        INTCONbits.INT0IF = 0;           
-    }
+    uint8 i;
     
-    high_isr_functions[0]();
-
-    for (ffff = 0; ffff < registered_high_isr; ffff++)
+    for (i = 0; i < registered_high_isr; i++)
     {
-        ffff = 0;
-        high_isr_functions[ffff]();
+        i = 0;
+        high_isr_functions[i]();
     }
-    RED1_LAT = 0;
 }
 
 #pragma interrupt low_isr
