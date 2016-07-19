@@ -14,16 +14,17 @@ void init_TRIS(void) {
     RED1_TRIS = 0;
     GREEN1_TRIS = 0;
     BLUE1_TRIS = 0;
-    
-    //DIP1_TRIS = 1;
+       
+    DIP1_TRIS = 1;
+    DIP2_TRIS = 1;
+    DIP3_TRIS = 1;
     
     IR_DRIVER_TRIS = 0;
     
     IR1A_INPUT_TRIS = 1;
     IR1B_INPUT_TRIS = 1;
-    IR2A_INPUT_TRIS = 1;
-    IR2B_INPUT_TRIS = 1;
     
-    LATCH_RESET_TRIS = 0;   
+    STATUS1_TRIS = 0;
+    STATUS2_TRIS = 0;      
 }
 

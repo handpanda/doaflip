@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=doaflip.X
+PROJECTNAME=doaflip
 
 # Active Configuration
 DEFAULTCONF=default

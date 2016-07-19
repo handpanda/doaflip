@@ -77,8 +77,7 @@ void high_isr(void)
     uint8 i;
     
     for (i = 0; i < registered_high_isr; i++)
-    {
-        i = 0;
+    {       
         high_isr_functions[i]();
     }
 }

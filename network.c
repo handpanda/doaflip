@@ -18,15 +18,25 @@ void network_receive() {
 
 void network_sendLightStatus() {
 	canPacket sPacket;
+    static int light = 0; 
     
-    set_status(1, -1);
+    light ^= 1;
+    
+    set_status(light, light);
 	sPacket.id.sid = NETWORK_ID_DATA_LIGHTSTATUS;
 	sPacket.rtr = false;
-	sPacket.length = 1;       
+	sPacket.length = 8;       
 	
-	sPacket.data[0] = 0;
-	can_send(&sPacket);
-    set_status(0, -1);
+    sPacket.data[0] = 0;
+	sPacket.data[1] = 1;
+    sPacket.data[2] = 2;
+    sPacket.data[3] = 3;
+    sPacket.data[4] = 4;
+    sPacket.data[5] = 5;
+    sPacket.data[6] = 6;
+    sPacket.data[7] = 7;
+    
+	can_send(&sPacket);    
 }
 
 void init_network() {    

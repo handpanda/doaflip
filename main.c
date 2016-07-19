@@ -10,9 +10,10 @@
 
 #include <p18f25K80.h>
 #include <timers.h>
-#include <pwm.h>
 
 #include "config.h"
+#include "lights.h"
+#include "network.h"
 
 #include "ringbuffer.h"
 #include "queue.h"
@@ -20,19 +21,17 @@
 #include "nutz.h"
 #include "can.h"
 #include "nutz.h"
-
+#include "pwm.h"
 
 // PIC18F25K80 Configuration Bit Settings
 
 // 'C' source line config statements
 
-#include <p18F25K80.h>
-
 // CONFIG1L
 #pragma config RETEN = OFF      // VREG Sleep Enable bit (Ultra low-power regulator is Disabled (Controlled by REGSLP bit))
 #pragma config INTOSCSEL = HIGH // LF-INTOSC Low-power Enable bit (LF-INTOSC in High-power mode during Sleep)
 #pragma config SOSCSEL = HIGH   // SOSC Power Selection and mode Configuration bits (High Power SOSC circuit selected)
-#pragma config XINST = ON       // Extended Instruction Set (Enabled)
+#pragma config XINST = OFF       // Extended Instruction Set (Enabled)
 
 // CONFIG1H
 #pragma config FOSC = INTIO2    // Oscillator (Internal RC oscillator)
@@ -96,21 +95,11 @@
 /*
  * 
  */
-volatile int a = 5;
-volatile int b = 0;
-volatile int counter = 0;
-
-volatile int ir_driver = 0;
-
-int duty_cycle;
-
-
 void set_color(char r, char g, char b) {
     RED1_LAT = r;
     BLUE1_LAT = b;
     GREEN1_LAT = g;
 }
-
 
 // 0 open, 1 closed/blocked
 bool gate_status = 0;
@@ -125,7 +114,9 @@ bool gate_just_closed() {
 }
 
 void update_gate_status() {
-    gate_status = IR1A_INPUT_PORT;
+    if (IR1A_INPUT_PORT == 0) {
+        gate_status = 0;
+    }
 }
 
 void test_leds()
@@ -133,18 +124,42 @@ void test_leds()
     static uint8 enable = 0;
     enable = (enable + 1) % 8;
     
-    set_color(enable & 0b1, (enable & 0b10) >> 1, (enable & 0b100) >> 2);
+    set_color(0, enable & 0b1, 0);
+}
+
+void toggle_blue() {
+    static uint8 blue_status = 0;
+    
+    blue_status ^= 1;
+    
+    set_color(0, 0, blue_status);   
 }
 
 void ir_ISR (void) {
     if (INTCONbits.INT0IF) {
         INTCONbits.INT0IF = 0;   
 
-        test_leds();
+       // if (gate_status == 0) {
+            test_leds();
+       // }
+        
+      //  gate_status = 1;
     }
 }
 
+
 int main(void) {
+    
+    rti_init();   
+    queue_init();    
+    can_init();
+    
+    init_network(); 
+    
+    // Oscillator configuration
+    OSCCONbits.IRCF = 0b111; // Set internal oscillator (HF/MF/LF) and prescaler
+    OSCCONbits.SCS = 0b10; // Use internal oscillator    
+    
     // Disable A/D converter
     ADCON0bits.ADON = 0;
     ANCON0 = 0;
@@ -157,43 +172,43 @@ int main(void) {
     PMD0bits.CCP5MD = 1; // Disable CCP5
     
     T3CON = 0;
-    T0CON = 0;
-    
-    // Oscillator configuration
-    OSCCON = 0;
-    OSCCON2 = 0;
-    OSCCONbits.IRCF = 0b101; // Set internal oscillator speed  
-    OSCCONbits.SCS = 0b10;
-    
-    
-    PR2 = 0b00011001 ;
-    T2CON = 0b00000100 ;
-    CCPR2L = 0b00001100 ;
-    CCP2CON = 0b00111100 ;    
+    T0CON = 0;                  
+       
+    //init_pwm();
     
     // Set up interrupt for INT0
     INTCONbits.INT0IF = 0;
     INTCONbits.INT0IE = 1;
-    INTCON2bits.INTEDG0 = 1; 
+    INTCON2bits.INTEDG0 = 0; // Falling edge (rising edge hits both edges?) 
     
     // Register the ISR
-    register_high_isr(&ir_ISR);
+    //.register_high_isr(&ir_ISR);
 
     // Init the outputs
     init_TRIS();
-    LATCH_RESET_LAT = 1;
-    set_color(0,0,1);
+        
+    //set_color(0, 0, 1);
+    
+    //rti_register(&toggle_lights, 500, -1, true);
     
     // Enable interrupts
     RCONbits.IPEN = 1;
     INTCONbits.GIE = 1;
     INTCONbits.PEIE = 1;
-        
-    while (1){
+    
+    set_color(0, 1, 0); 
+    set_status(0, 0);
+    if (DIP1_PORT) {
+        rti_register(&network_sendLightStatus, 1000, -1, true);       
+    }
+    
+    
+    while (1) {
+        queue_pump();             
     }
     
     // Should never hit this.
-    set_color(0,0,1);
+    set_color(1,0,0);
     
     return 0;
 }

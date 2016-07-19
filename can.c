@@ -200,17 +200,13 @@ void can_init(void)
 
     // See: http://umnsvp.dyndns.org/uberwiki/C3:Battery_Protection_and_Equalization
 
-    // Read DIP switches to set CAN id 
-    can_id = DIP1_PORT |
-             DIP2_PORT << 1 |
-             DIP3_PORT << 2 |
-             DIP4_PORT << 3;      
+    // Read DIP switches to set CAN id  
             
     // FILTER 0,1 & MASK 0 - Accept PRG/CMD
 
     // Specific Module - ID: MODULE_NUMBER
-    RXF0SIDHbits.SID = 0b01000000 + ((can_id >> 3) & 0b111);
-    RXF0SIDLbits.SID = (can_id & 0b111);
+    RXF0SIDHbits.SID = 0b01000000 + ((0 >> 3) & 0b111);
+    RXF0SIDLbits.SID = (0 & 0b111);
     RXF0SIDLbits.EXIDEN = 0;
 
     // All module command - ID: 0b111111
@@ -251,7 +247,7 @@ void can_init(void)
 
 // =========================================================
 
-void can_registerRecieveMethod(voidfxn fxn) 
+void can_registerReceiveMethod(voidfxn fxn) 
 {
     receiveFxn = fxn;
 }	

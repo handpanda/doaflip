@@ -37,8 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Defines
  *******************************************************************/
  
-#define RTI_IF	PIR1bits.TMR2IF
-#define RTI_IE	PIE1bits.TMR2IE
+#define RTI_IF	PIR4bits.TMR4IF
+#define RTI_IE	PIE4bits.TMR4IE
 
 #define MAX_RTI	10
 

@@ -57,7 +57,7 @@ void can_send(canPacket* p);
 void can_copyPacket(canPacket* s, canPacket* d);
 void can_trySend(void);
 
-void can_registerRecieveMethod(voidfxn fxn);
+void can_registerReceiveMethod(voidfxn fxn);
 bool can_doReceive(canPacket *p);
 
 #endif

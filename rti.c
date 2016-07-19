@@ -167,21 +167,20 @@ bool rti_updateInterval(voidfxn function, uint32 interval)
 void rti_init( void )
 {
 
-    // Fosc/4 = 32 MHz/4 = 8MHz
-    // 01 = Prescale of 4 -> 2MHz
-    // 0111 = Postscale of 8 -> 250KHz
-    // PR2 = 249 -> 1 KHz -> 1mS
+    // Fosc/4 = 16 MHz/4 = 4MHz
+    // 11 = Prescale of 16 -> 250KHz
+    // 0001 = Postscale of 2 -> 125KHz
+    // PR2 = 124 -> 1 KHz -> 1mS
 
-    #define RTI_IF	PIR1bits.TMR2IF
-    #define RTI_IE	PIE1bits.TMR2IE
-
-    TMR2 = 0;
-    PR2 = 249;
-    T2CON = 0b00001111;
+    TMR4 = 0;
+    PR4 = 124;
+    //T2CON = 0b00001111;
+    T4CONbits.T4OUTPS = 0b0001;
+    T4CONbits.TMR4ON = 0b1;
+    T4CONbits.T4CKPS = 0b11;
 
     RTI_IF = 0;
     RTI_IE = 1;
 
-    register_high_isr(&rti_isr);
-		  			
+    register_high_isr(&rti_isr);	  		
 }
