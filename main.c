@@ -50,7 +50,7 @@
 #pragma config WDTPS = 1048576  // Watchdog Postscaler (1:1048576)
 
 // CONFIG3H
-#pragma config CANMX = PORTB    // ECAN Mux bit (ECAN TX and RX pins are located on RB2 and RB3, respectively)
+#pragma config CANMX = PORTC    // ECAN Mux bit (ECAN TX and RX pins are located on RB2 and RB3, respectively)
 #pragma config MSSPMSK = MSK7   // MSSP address masking (7 Bit address masking mode)
 #pragma config MCLRE = ON       // Master Clear Enable (MCLR Enabled, RE3 Disabled)
 
