@@ -1,4 +1,0 @@
-Warning[2058] C:\Users\graham\MPLABXProjects\doaflip\main.c 143 : call of function without prototype
-Warning[2103] C:\Users\graham\MPLABXProjects\doaflip\main.c 151 : default startup code expects main function declared as 'void main (void)'
-Warning[2058] C:\Users\graham\MPLABXProjects\doaflip\main.c 157 : call of function without prototype
-Warning[2054] C:\Users\graham\MPLABXProjects\doaflip\main.c 202 : suspicious pointer conversion

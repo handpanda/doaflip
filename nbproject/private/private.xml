@@ -4,17 +4,14 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/graham/MPLABXProjects/doaflip/main.c</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/nutz.c</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/queue.c</file>
+            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/led.c</file>
             <file>file:/C:/Users/graham/MPLABXProjects/doaflip/rti.c</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/can.c</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/network.c</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/can.h</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/lights.h</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/network.h</file>
+            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/nutz.h</file>
+            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/led.h</file>
+            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/gates.c</file>
             <file>file:/C:/Users/graham/MPLABXProjects/doaflip/lights.c</file>
-            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/ringbuffer.c</file>
             <file>file:/C:/Users/graham/MPLABXProjects/doaflip/config.c</file>
+            <file>file:/C:/Users/graham/MPLABXProjects/doaflip/ringbuffer.c</file>
         </group>
     </open-files>
 </project-private>

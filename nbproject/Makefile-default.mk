@@ -45,17 +45,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=main.c config.c can.c queue.c ringbuffer.c rti.c nutz.c lights.c network.c
+SOURCEFILES_QUOTED_IF_SPACED=main.c config.c can.c queue.c ringbuffer.c rti.c nutz.c lights.c network.c led.c gates.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/can.o ${OBJECTDIR}/queue.o ${OBJECTDIR}/ringbuffer.o ${OBJECTDIR}/rti.o ${OBJECTDIR}/nutz.o ${OBJECTDIR}/lights.o ${OBJECTDIR}/network.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/config.o.d ${OBJECTDIR}/can.o.d ${OBJECTDIR}/queue.o.d ${OBJECTDIR}/ringbuffer.o.d ${OBJECTDIR}/rti.o.d ${OBJECTDIR}/nutz.o.d ${OBJECTDIR}/lights.o.d ${OBJECTDIR}/network.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/can.o ${OBJECTDIR}/queue.o ${OBJECTDIR}/ringbuffer.o ${OBJECTDIR}/rti.o ${OBJECTDIR}/nutz.o ${OBJECTDIR}/lights.o ${OBJECTDIR}/network.o ${OBJECTDIR}/led.o ${OBJECTDIR}/gates.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/config.o.d ${OBJECTDIR}/can.o.d ${OBJECTDIR}/queue.o.d ${OBJECTDIR}/ringbuffer.o.d ${OBJECTDIR}/rti.o.d ${OBJECTDIR}/nutz.o.d ${OBJECTDIR}/lights.o.d ${OBJECTDIR}/network.o.d ${OBJECTDIR}/led.o.d ${OBJECTDIR}/gates.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/can.o ${OBJECTDIR}/queue.o ${OBJECTDIR}/ringbuffer.o ${OBJECTDIR}/rti.o ${OBJECTDIR}/nutz.o ${OBJECTDIR}/lights.o ${OBJECTDIR}/network.o
+OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/can.o ${OBJECTDIR}/queue.o ${OBJECTDIR}/ringbuffer.o ${OBJECTDIR}/rti.o ${OBJECTDIR}/nutz.o ${OBJECTDIR}/lights.o ${OBJECTDIR}/network.o ${OBJECTDIR}/led.o ${OBJECTDIR}/gates.o
 
 # Source Files
-SOURCEFILES=main.c config.c can.c queue.c ringbuffer.c rti.c nutz.c lights.c network.c
+SOURCEFILES=main.c config.c can.c queue.c ringbuffer.c rti.c nutz.c lights.c network.c led.c gates.c
 
 
 CFLAGS=
@@ -161,6 +161,22 @@ ${OBJECTDIR}/network.o: network.c  nbproject/Makefile-${CND_CONF}.mk
 	@${DEP_GEN} -d ${OBJECTDIR}/network.o 
 	@${FIXDEPS} "${OBJECTDIR}/network.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c18 
 	
+${OBJECTDIR}/led.o: led.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/led.o.d 
+	@${RM} ${OBJECTDIR}/led.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1 -p$(MP_PROCESSOR_OPTION) -ms -oa-  -I ${MP_CC_DIR}\\..\\h  -fo ${OBJECTDIR}/led.o   led.c 
+	@${DEP_GEN} -d ${OBJECTDIR}/led.o 
+	@${FIXDEPS} "${OBJECTDIR}/led.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c18 
+	
+${OBJECTDIR}/gates.o: gates.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/gates.o.d 
+	@${RM} ${OBJECTDIR}/gates.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1 -p$(MP_PROCESSOR_OPTION) -ms -oa-  -I ${MP_CC_DIR}\\..\\h  -fo ${OBJECTDIR}/gates.o   gates.c 
+	@${DEP_GEN} -d ${OBJECTDIR}/gates.o 
+	@${FIXDEPS} "${OBJECTDIR}/gates.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c18 
+	
 else
 ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -233,6 +249,22 @@ ${OBJECTDIR}/network.o: network.c  nbproject/Makefile-${CND_CONF}.mk
 	${MP_CC} $(MP_EXTRA_CC_PRE) -p$(MP_PROCESSOR_OPTION) -ms -oa-  -I ${MP_CC_DIR}\\..\\h  -fo ${OBJECTDIR}/network.o   network.c 
 	@${DEP_GEN} -d ${OBJECTDIR}/network.o 
 	@${FIXDEPS} "${OBJECTDIR}/network.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c18 
+	
+${OBJECTDIR}/led.o: led.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/led.o.d 
+	@${RM} ${OBJECTDIR}/led.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -p$(MP_PROCESSOR_OPTION) -ms -oa-  -I ${MP_CC_DIR}\\..\\h  -fo ${OBJECTDIR}/led.o   led.c 
+	@${DEP_GEN} -d ${OBJECTDIR}/led.o 
+	@${FIXDEPS} "${OBJECTDIR}/led.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c18 
+	
+${OBJECTDIR}/gates.o: gates.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/gates.o.d 
+	@${RM} ${OBJECTDIR}/gates.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -p$(MP_PROCESSOR_OPTION) -ms -oa-  -I ${MP_CC_DIR}\\..\\h  -fo ${OBJECTDIR}/gates.o   gates.c 
+	@${DEP_GEN} -d ${OBJECTDIR}/gates.o 
+	@${FIXDEPS} "${OBJECTDIR}/gates.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c18 
 	
 endif
 
