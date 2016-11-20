@@ -57,18 +57,18 @@ voidfxn receiveFxn;
  * Defines
  ********************************************************************/
 
-#define CAN_TX_TRIS		TRISCbits.TRISC6
-#define CAN_RX_TRIS		TRISCbits.TRISC7
+#define CAN_TX_TRIS		TRISBbits.TRISB2
+#define CAN_RX_TRIS		TRISBbits.TRISB3
 
 #define CAN_MODE_CONFIG				0b100
 #define CAN_MODE_LOOPBACK			0b010
 #define CAN_MODE_LISTEN				0b011
-#define CAN_MODE_DISABLED_SLEEP                 0b001
+#define CAN_MODE_DISABLED_SLEEP     0b001
 #define CAN_MODE_NORMAL				0b000
 
 #define CAN_MODE_LEGACY				0b00
-#define CAN_MODE_ENHANCED_LEGACY                0b01
-#define CAN_MODE_ENHANCED_FIFO                  0b10
+#define CAN_MODE_ENHANCED_LEGACY    0b01
+#define CAN_MODE_ENHANCED_FIFO      0b10
 
 #define CAN_PRIORITY_3				0b11 // highest
 #define CAN_PRIORITY_2				0b10
@@ -89,11 +89,11 @@ voidfxn receiveFxn;
 
 void can_ISR(void) 
 {
-    canPacket packet;
-
+    canPacket packet;   
+    
     if (RXB0CONbits.RXFUL)
-    {
-        // This recieve buffer handles the PRG/CMD category packets
+    {           
+        // This receive buffer handles the PRG/CMD category packets
 
         packet.id.sid = RXB0SIDHbits.SID;
         packet.id.sid = packet.id.sid << 3;
@@ -134,7 +134,7 @@ void can_ISR(void)
     //if (PIR5bits.TXB0IF)
     //{
     //	PIR5bits.TXB0IF = 0;
-    can_trySend();
+    // can_trySend();
     //}
 }		
 
@@ -145,6 +145,7 @@ void can_ISR(void)
 void can_init(void) 
 {
     // Configure receive port
+    CAN_TX_TRIS = 0;
     CAN_RX_TRIS = 1;
 
     // Put the device in config mode
@@ -154,28 +155,22 @@ void can_init(void)
     // ====== Put the device in legacy mode (for now) ======
     ECANCONbits.MDSEL = CAN_MODE_ENHANCED_LEGACY;
 
-    // =========== Baudrate & Sampling Configuration ===========
-    // Baudrate = 125kbps
-    // Fosc = 32 MHz
-
-    BRGCON1bits.SJW = 0x00;		// Synchronization jump width = 1 TQ
-    BRGCON1bits.BRP = 1; 		// brp = 2
-
-    BRGCON2bits.SEG1PH = 0x05; 	// Phase Segment 1 time = 7TQ
-    BRGCON2bits.PRSEG = 0x03;  	// Propagation time = 1TQ
-    BRGCON2bits.SAM = 1;		// triple sample bus
-    BRGCON2bits.SEG2PHTS = 1;	// enable programming segph2
-
-    BRGCON3bits.WAKDIS = 1;		// Disable Bus Wakeup
-    BRGCON3bits.SEG2PH = 0x04;  // Phase Segment 2 time = 3TQ
+    BSEL0 = 0xFC;
+    
+    // ===== Set the baud rate =====
+    
+    //  100 Kbps @ 64MHz 
+    BRGCON1 = 0x93; //0001 1111     //SJW=3TQ     BRP  19
+    BRGCON2 = 0xB8; //1011 1000     //SEG2PHTS 1    sampled once  PS1=8TQ  PropagationT 1TQ  
+    BRGCON3 = 0x05; //0000 0101     //PS2  6TQ
 
     // =========== Configure the IO characteristics ===========
 
     CIOCONbits.ENDRHI = 1;		// Drive VDD when recessive for diff bus.
-    CIOCONbits.CLKSEL = 1;		// Use Oscillator as the source of CAN clock.
+    CIOCONbits.CLKSEL = 0;		// Use PLL as the source of CAN clock.
     CIOCONbits.CANCAP = 0;		// CAN capture NOT enabled.
 
-    // =========== Tranciever Setup ===========
+    // =========== Transceiver Setup ===========
 
     PIE5bits.TXB0IE = 1;
     TXB0CONbits.TXPRI = CAN_PRIORITY_3;
@@ -184,6 +179,7 @@ void can_init(void)
 
     // =========== Receiver Setup ===========
 
+    // Interrupt bits
     PIR5bits.RXB1IF = 0;
     PIR5bits.RXB0IF = 0;
     PIE5bits.RXB1IE = 1;
@@ -193,38 +189,31 @@ void can_init(void)
     RXB0CONbits.RXM1 = 0;
     RXB1CONbits.RXM1 = 0;
 
-    // Need to receive 3 categories of packets:
-    // - PRG/CMD  : 0b 01 xxx xxxxxx (configured)
-    // - DEBUG    : 0b 11 xxx xxxxxx (not configured)
-    // - RTR/DATA : 0b 10 xxx xxxxxx (send only)
+    // ===== Masks and Filters =====
+    
+    // Filter 0
+    RXF0SIDH = 0x00000000;
+    RXF0SIDL = 0x000;
 
-    // See: http://umnsvp.dyndns.org/uberwiki/C3:Battery_Protection_and_Equalization
+    // Filter 1
+    RXF1SIDH = 0x00000000;
+    RXF1SIDL = 0b000;
+    
+    // Mask 0
+    RXM0SIDHbits.SID = 0b00000000;
+    RXM0SIDLbits.SID = 0b000;
+    
+    // Mask 1
+    RXM1SIDHbits.SID = 0b00000000;
+    RXM1SIDLbits.SID = 0b000;    
 
-    // Read DIP switches to set CAN id  
-            
-    // FILTER 0,1 & MASK 0 - Accept PRG/CMD
+    RXFBCON0 = 0x00;  		// Associates receive filter 0 & 1 with RXB0.
 
-    // Specific Module - ID: MODULE_NUMBER
-    RXF0SIDHbits.SID = 0b01000000 + ((0 >> 3) & 0b111);
-    RXF0SIDLbits.SID = (0 & 0b111);
-    RXF0SIDLbits.EXIDEN = 0;
-
-    // All module command - ID: 0b111111
-    RXF1SIDHbits.SID = 0b01000111;
-    RXF1SIDLbits.SID = 0b111;
-    RXF1SIDLbits.EXIDEN = 0;
-
-    // Pay attention to the category and module id.
-    RXM0SIDHbits.SID = 0b11000111;
-    RXM0SIDLbits.SID = 0b111;
-
-    RXFBCON0 = 0x00;  		// Associtates receive filter 0 & 1 with RXB0.
     MSEL0bits.FIL0 = 0b00;	// Use Mask 0 with Filter 0
     MSEL0bits.FIL1 = 0b00;  //     "           Filter 1
-
+     
     RXFCON0bits.RXF0EN = 1; // Enable Filter 0
     RXFCON0bits.RXF1EN = 1; // Enable Filter 1
-
 
     // Make sure there aren't any pending messages.
     RXB0CONbits.RXFUL = 0;
@@ -232,17 +221,12 @@ void can_init(void)
 
     ringbuff_init(&rxBuffer, rxBuff, CAN_BUFFER_LENGTH_BYTES);
 
-
     // Register the interrupt
     register_high_isr(&can_ISR);
 
     // Set to normal mode...
-
-    CANCONbits.REQOP = CAN_MODE_NORMAL;
-    
-    while(CANSTATbits.OPMODE != CAN_MODE_NORMAL);
-
-    CAN_TXREQ0 = 0;
+    CANCONbits.REQOP = CAN_MODE_NORMAL;    
+    while(CANSTATbits.OPMODE != CAN_MODE_NORMAL);   
 }	
 
 // =========================================================
@@ -256,7 +240,7 @@ void can_registerReceiveMethod(voidfxn fxn)
 void can_send(canPacket* p) 
 {
     ringbuff_push_back_s(&txBuffer, p, CAN_PACKET_SIZE);
-    can_trySend();
+    can_trySend();    
 }
 
 // =========================================================
@@ -266,30 +250,37 @@ void can_trySend(void)
 {
     canPacket p;
 
+    static int light2 = 0;  
+    static int8 count = 0;
+             
     // Use the TX0 registers to send general packets.  TX1 and TX2 will be configured
     // for RTR in the future.
-
+   
     if (!CAN_TXREQ0)
-    {
+    {        
+        count++;                 
 
         // Try to pull a packet from the queue.  If it is empty, return.
         if (!ringbuff_pop_front_s(&txBuffer, &p, CAN_PACKET_SIZE)) { return; }
 
-        TXB0SIDLbits.SID = (p.id.sid) & 0b0111;
-        TXB0SIDH = (p.id.sid) >> 3;
-        TXB0SIDLbits.EXIDE = 0;
-        TXB0D0 = (p.data)[0];
-        TXB0D1 = (p.data)[1];
-        TXB0D2 = (p.data)[2];
-        TXB0D3 = (p.data)[3];
-        TXB0D4 = (p.data)[4];
-        TXB0D5 = (p.data)[5];
-        TXB0D6 = (p.data)[6];
-        TXB0D7 = (p.data)[7];
-        TXB0DLCbits.TXRTR = 0;
-        TXB0DLCbits.DLC = p.length;
+        TXB0EIDH = 0x00;
+        TXB0EIDL = 0x00;
+        
+		TXB0SIDLbits.SID = (p.id.sid) & 0b0111;
+		TXB0SIDH = (p.id.sid) >> 3;
+		TXB0SIDLbits.EXIDE = 0;
+		TXB0D0 = (p.data)[0];
+		TXB0D1 = (p.data)[1];
+		TXB0D2 = (p.data)[2];
+		TXB0D3 = (p.data)[3];
+		TXB0D4 = (p.data)[4];
+		TXB0D5 = (p.data)[5];
+		TXB0D6 = (p.data)[6];
+		TXB0D7 = (p.data)[7];			
+        
+        TXB0DLC = p.length; // Number of data bytes
 
-        CAN_TXREQ0 = 1; 				// Send the message
+        CAN_TXREQ0 = 1; 				// Send the message        
     }
 }		
 

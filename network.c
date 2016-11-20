@@ -1,6 +1,12 @@
 #include "can.h"
 #include "lights.h"
 #include "network.h"
+#include "can.h"
+#include "gates.h"
+
+void network_init() {    
+    can_registerReceiveMethod(&network_receive);
+}
 
 void network_receive() {
     canPacket p;
@@ -9,36 +15,54 @@ void network_receive() {
 	can_doReceive(&p);
 	
 	switch (p.id.sid) {
-        //case NETWORK_ID_DATA_LIGHTSTATUS
+        case NETWORK_ID_COMMAND_LIGHTSECTION:
+            gate_lightSection(p.data[0]);
+            
+            break;
+        case NETWORK_ID_DATA_GATETRIPPED:
+            gate_respondToGate(p.data[0]);
+            
+            break;
+        
 		default:
-            toggle_lights();
+            //toggle_lights();
 		break;
 	}	
 }
+int light = 0;
 
 void network_sendLightStatus() {
-	canPacket sPacket;
-    static int light = 0; 
+ 	canPacket sPacket;    
     
     light ^= 1;
     
-    set_status(light, light);
-	sPacket.id.sid = NETWORK_ID_DATA_LIGHTSTATUS;
-	sPacket.rtr = false;
-	sPacket.length = 8;       
-	
-    sPacket.data[0] = 0;
-	sPacket.data[1] = 1;
-    sPacket.data[2] = 2;
-    sPacket.data[3] = 3;
-    sPacket.data[4] = 4;
-    sPacket.data[5] = 5;
-    sPacket.data[6] = 6;
-    sPacket.data[7] = 7;
+    set_status(light, light, -1);
     
-	can_send(&sPacket);    
+	return;
 }
 
-void init_network() {    
-    can_registerReceiveMethod(&network_receive);
+// Report a gate trip
+void network_sendGatePacket(uint8 gate_index) {
+    canPacket sPacket;
+    
+	sPacket.id.sid = NETWORK_ID_DATA_GATETRIPPED;
+	sPacket.rtr = false;
+	sPacket.length = 1;       
+	
+    sPacket.data[0] = gate_index;  
+    
+    can_send(&sPacket);
+}
+
+// Light up a section 
+void network_lightSingleSection(uint8 section_index) {
+    canPacket sPacket;
+    
+	sPacket.id.sid = NETWORK_ID_COMMAND_LIGHTSECTION;
+	sPacket.rtr = false;
+	sPacket.length = 1;       
+	
+    sPacket.data[0] = section_index;    
+    
+    can_send(&sPacket);
 }

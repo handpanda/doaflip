@@ -19,9 +19,8 @@
 #include "queue.h"
 #include "rti.h"
 #include "nutz.h"
-#include "can.h"
-#include "nutz.h"
-#include "pwm.h"
+#include "led.h"
+#include "gates.h"
 
 // PIC18F25K80 Configuration Bit Settings
 
@@ -30,7 +29,7 @@
 // CONFIG1L
 #pragma config RETEN = OFF      // VREG Sleep Enable bit (Ultra low-power regulator is Disabled (Controlled by REGSLP bit))
 #pragma config INTOSCSEL = HIGH // LF-INTOSC Low-power Enable bit (LF-INTOSC in High-power mode during Sleep)
-#pragma config SOSCSEL = HIGH   // SOSC Power Selection and mode Configuration bits (High Power SOSC circuit selected)
+#pragma config SOSCSEL = DIG   // SOSC Power Selection and mode Configuration bits (High Power SOSC circuit selected)
 #pragma config XINST = OFF       // Extended Instruction Set (Enabled)
 
 // CONFIG1H
@@ -50,7 +49,7 @@
 #pragma config WDTPS = 1048576  // Watchdog Postscaler (1:1048576)
 
 // CONFIG3H
-#pragma config CANMX = PORTC    // ECAN Mux bit (ECAN TX and RX pins are located on RB2 and RB3, respectively)
+#pragma config CANMX = PORTB    // ECAN Mux bit (ECAN TX and RX pins are located on RB2 and RB3, respectively)
 #pragma config MSSPMSK = MSK7   // MSSP address masking (7 Bit address masking mode)
 #pragma config MCLRE = ON       // Master Clear Enable (MCLR Enabled, RE3 Disabled)
 
@@ -88,73 +87,52 @@
 // CONFIG7H
 #pragma config EBTRB = OFF      // Table Read Protect Boot (Disabled)
 
-
-
-
-
-/*
- * 
- */
-void set_color(char r, char g, char b) {
-    RED1_LAT = r;
-    BLUE1_LAT = b;
-    GREEN1_LAT = g;
-}
-
-// 0 open, 1 closed/blocked
-bool gate_status = 0;
-
-
-bool is_gate_open() {
-    return gate_status;
-}
-
-bool gate_just_closed() {
-    return !gate_status && IR1A_INPUT_PORT;
-}
-
-void update_gate_status() {
-    if (IR1A_INPUT_PORT == 0) {
-        gate_status = 0;
+void ir_ISR() {
+    // Gate 1
+    if (INTCON3bits.INT1IF) {
+        INTCON3bits.INT1IF = 0;        
+        
+        gate_tripGate(1);
+        //set_status(-1, 1, -1);
+        
+        //rti_register(&gate_clearSection1, 500, 1, false);
     }
-}
-
-void test_leds()
-{
-    static uint8 enable = 0;
-    enable = (enable + 1) % 8;
     
-    set_color(0, enable & 0b1, 0);
-}
-
-void toggle_blue() {
-    static uint8 blue_status = 0;
-    
-    blue_status ^= 1;
-    
-    set_color(0, 0, blue_status);   
-}
-
-void ir_ISR (void) {
+    // Gate 2
     if (INTCONbits.INT0IF) {
         INTCONbits.INT0IF = 0;   
 
-       // if (gate_status == 0) {
-            test_leds();
-       // }
+        gate_tripGate(2);
+        //set_status(-1, -1, 1);
         
-      //  gate_status = 1;
-    }
+        //rti_register(&gate_clearSection2, 500, 1, false);        
+    }    
 }
 
+void heartbeat() {
+    static int8 status = 0;
+    
+    if (status == 0) {
+        status = 1;
+    } else {
+        status = 0;
+    }
+    
+    set_status(status, -1, -1);
+}
 
 int main(void) {
     
+    init_TRIS();
     rti_init();   
     queue_init();    
     can_init();
     
-    init_network(); 
+    network_init(); 
+    gate_init();
+    pwm_init();
+    
+    set_status(1, 1, 1);
     
     // Oscillator configuration
     OSCCONbits.IRCF = 0b111; // Set internal oscillator (HF/MF/LF) and prescaler
@@ -163,52 +141,59 @@ int main(void) {
     // Disable A/D converter
     ADCON0bits.ADON = 0;
     ANCON0 = 0;
-    ANCON1 = 0;
-    
-    // Disable Comparators
-    CM2CON = 0;
-    CM1CON = 0;    
-    
-    PMD0bits.CCP5MD = 1; // Disable CCP5
-    
-    T3CON = 0;
-    T0CON = 0;                  
+    ANCON1 = 0;                   
        
-    //init_pwm();
-    
-    // Set up interrupt for INT0
+    // Interrupt 0 (gate 0)
     INTCONbits.INT0IF = 0;
     INTCONbits.INT0IE = 1;
+    
+    // Interrupt 1 (gate 1)
+    INTCON3bits.INT1IF = 0;
+    INTCON3bits.INT1IE = 1;
+    
     INTCON2bits.INTEDG0 = 0; // Falling edge (rising edge hits both edges?) 
     
     // Register the ISR
-    //.register_high_isr(&ir_ISR);
+    register_high_isr(&ir_ISR);
 
-    // Init the outputs
-    init_TRIS();
-        
-    //set_color(0, 0, 1);
+    PR2 =       0b01101000 ;
+    T2CON =     0b00000100 ;
+    CCPR2L =    0b00110100 ;
+    CCP2CON =   0b00011100 ;        
     
-    //rti_register(&toggle_lights, 500, -1, true);
+//    rti_register(&heartbeat, 500, -1, false);
+    
+   // rti_register(&pwm_update, 10, -1, false);           
     
     // Enable interrupts
     RCONbits.IPEN = 1;
     INTCONbits.GIE = 1;
     INTCONbits.PEIE = 1;
     
-    set_color(0, 1, 0); 
-    set_status(0, 0);
-    if (DIP1_PORT) {
-        rti_register(&network_sendLightStatus, 1000, -1, true);       
-    }
+    // Turn off I J K
+    set_status(0, 0, 0);    
     
+    gate_clearSection1();
+    gate_clearSection2(); 
     
-    while (1) {
+    WHITE_1_LAT = 0;
+    WHITE_2_LAT = 0;           
+    
+    while (1) {       
+        if (IR1_INPUT_PORT || IR2_INPUT_PORT) {
+            set_status(1, -1, -1);
+        } else {
+            set_status(0, -1, -1);
+        }
+        
+        
+        
+        if (!MAGIC_PORT) {            
+     //       gate_tripGate(1);
+        }
+        
         queue_pump();             
-    }
-    
-    // Should never hit this.
-    set_color(1,0,0);
+    }   
     
     return 0;
 }
